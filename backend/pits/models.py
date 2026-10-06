@@ -1,5 +1,6 @@
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import models
+from django.utils import timezone
 
 
 class User(models.Model):
@@ -39,3 +40,35 @@ class LiquorSample(models.Model):
     taken_at = models.DateTimeField(auto_now_add=True)
     ph = models.FloatField()
     operator = models.CharField(max_length=64, blank=True)
+
+
+def _today():
+    return timezone.localdate()
+
+
+class DrainFlag(models.Model):
+    """排液渠巡渠旗：同一场地同一日只许有一面未作废旗。"""
+
+    STATE_CLEAR = "clear"      # 畅通
+    STATE_BLOCKED = "blocked"  # 淤塞
+
+    yard = models.ForeignKey(Yard, on_delete=models.CASCADE, related_name="drain_flags")
+    date = models.DateField(default=_today)
+    state = models.CharField(max_length=20)
+    inspector = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+    voided_at = models.DateTimeField(null=True, blank=True)
+    voided_by = models.CharField(max_length=64, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["yard", "date"],
+                condition=models.Q(voided_at__isnull=True),
+                name="uniq_active_flag_per_yard_day",
+            ),
+        ]
+
+    @property
+    def is_active(self) -> bool:
+        return self.voided_at is None

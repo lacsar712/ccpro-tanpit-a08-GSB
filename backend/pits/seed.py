@@ -1,4 +1,6 @@
-from pits.models import LiquorSample, Pit, User, Yard
+from django.utils import timezone
+
+from pits.models import DrainFlag, LiquorSample, Pit, User, Yard
 
 
 def seed_demo() -> None:
@@ -25,3 +27,10 @@ def seed_demo() -> None:
         pit = Pit.objects.create(yard=yard, code=code, status=status, row=row, col=col)
         if ph is not None:
             LiquorSample.objects.create(pit=pit, ph=ph, operator="worker")
+    # 当日一面淤塞旗：鞣制中的坑想拨回注液会被挡住。
+    DrainFlag.objects.create(
+        yard=yard,
+        date=timezone.localdate(),
+        state=DrainFlag.STATE_BLOCKED,
+        inspector="admin",
+    )
