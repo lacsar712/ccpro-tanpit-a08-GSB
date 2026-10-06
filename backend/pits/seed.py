@@ -1,4 +1,6 @@
-from pits.models import LiquorSample, Pit, User, Yard
+from django.utils import timezone
+
+from pits.models import DitchFlag, LiquorSample, Pit, User, Yard
 
 
 def seed_demo() -> None:
@@ -17,7 +19,7 @@ def seed_demo() -> None:
         ("东-1", Pit.STATUS_TANNING, 0, 0, 4.2),
         ("东-2", Pit.STATUS_FILL, 0, 1, None),
         ("中-1", Pit.STATUS_DRAINED, 1, 0, 4.6),
-        ("中-2", Pit.STATUS_TANNING, 1, 1, 6.1),
+        ("中-2", Pit.STATUS_FILL, 1, 1, 6.1),
         ("西-1", Pit.STATUS_FILL, 2, 0, None),
         ("西-2", Pit.STATUS_DRAINED, 2, 1, 3.8),
     ]
@@ -25,3 +27,9 @@ def seed_demo() -> None:
         pit = Pit.objects.create(yard=yard, code=code, status=status, row=row, col=col)
         if ph is not None:
             LiquorSample.objects.create(pit=pit, ph=ph, operator="worker")
+    DitchFlag.objects.create(
+        yard=yard,
+        check_date=timezone.localdate(),
+        state=DitchFlag.STATE_SILTED,
+        inspector="admin",
+    )

@@ -39,3 +39,27 @@ class LiquorSample(models.Model):
     taken_at = models.DateTimeField(auto_now_add=True)
     ph = models.FloatField()
     operator = models.CharField(max_length=64, blank=True)
+
+
+class DitchFlag(models.Model):
+    """排液渠巡渠旗：某场某日的渠况（畅通/淤塞），可作废。"""
+
+    STATE_CLEAR = "clear"
+    STATE_SILTED = "silted"
+
+    yard = models.ForeignKey(Yard, on_delete=models.CASCADE, related_name="ditch_flags")
+    check_date = models.DateField()
+    state = models.CharField(max_length=10)
+    inspector = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+    voided_at = models.DateTimeField(null=True, blank=True)
+    voided_by = models.CharField(max_length=64, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["yard", "check_date"],
+                condition=models.Q(voided_at__isnull=True),
+                name="uniq_active_ditch_flag_per_yard_day",
+            )
+        ]

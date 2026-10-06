@@ -1,6 +1,8 @@
-"""鞣坑放液门槛：最近一次浸液酸碱度须在 3.5～5.0。"""
+"""鞣坑状态门槛：放液看酸碱度；鞣制中改注液看当日排液渠畅通旗。"""
 
-from pits.models import Pit
+from django.utils import timezone
+
+from pits.models import DitchFlag, Pit
 
 MIN_PH = 3.5
 MAX_PH = 5.0
@@ -15,10 +17,22 @@ def latest_ph(pit: Pit) -> float | None:
     return None if sample is None else sample.ph
 
 
+def active_ditch_flag(yard, on_date=None) -> DitchFlag | None:
+    """某场某日唯一有效（未作废）渠旗；没有返回 None。"""
+    on_date = on_date or timezone.localdate()
+    return yard.ditch_flags.filter(check_date=on_date, voided_at__isnull=True).first()
+
+
 def assert_can_set_status(pit: Pit, new_status: str) -> None:
     allowed = {Pit.STATUS_FILL, Pit.STATUS_TANNING, Pit.STATUS_DRAINED}
     if new_status not in allowed:
         raise RuleError(f"无效状态：{new_status}")
+    if new_status == Pit.STATUS_FILL and pit.status == Pit.STATUS_TANNING:
+        flag = active_ditch_flag(pit.yard)
+        if flag is None:
+            raise RuleError("今日尚无巡渠畅通旗，不能注液")
+        if flag.state == DitchFlag.STATE_SILTED:
+            raise RuleError("今日排液渠淤塞，不能注液")
     if new_status != Pit.STATUS_DRAINED:
         return
     ph = latest_ph(pit)

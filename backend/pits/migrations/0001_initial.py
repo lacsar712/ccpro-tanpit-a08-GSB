@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="User",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("username", models.CharField(max_length=64, unique=True)),
                 ("password_hash", models.CharField(max_length=256)),
                 ("role", models.CharField(default="worker", max_length=20)),
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Yard",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("name", models.CharField(max_length=120)),
                 ("village", models.CharField(blank=True, max_length=120)),
             ],
@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Pit",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("code", models.CharField(max_length=40)),
                 ("status", models.CharField(default="fill", max_length=20)),
                 ("row", models.IntegerField(default=0)),
@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="LiquorSample",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("taken_at", models.DateTimeField(auto_now_add=True)),
                 ("ph", models.FloatField()),
                 ("operator", models.CharField(blank=True, max_length=64)),
